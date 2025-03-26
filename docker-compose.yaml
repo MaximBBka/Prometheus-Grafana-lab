@@ -1,0 +1,40 @@
+version: '3'
+services:
+  nginx-front:
+    image: nginx:1.17.8
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx-conf-test.conf:/etc/nginx/nginx.conf
+    networks:
+      - app-network
+
+  prometheus:
+    image: prom/prometheus
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+    networks:
+      - app-network
+
+  grafana:
+    image: grafana/grafana
+    ports:
+      - "3000:3000"
+    networks:
+      - app-network
+  
+  nginx-exporter:
+    image: nginx/nginx-prometheus-exporter:0.8.0
+    ports:
+      - "9113:9113"
+    command:
+      - '-nginx.scrape-uri=http://nginx-front:80/stub_status'
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    name: app-network
+    driver: bridge
